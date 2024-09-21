@@ -1,120 +1,114 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { User } from '../types/User'; 
-import Navbar from './Navbar';
-import AddUserModal from './AddUserModal';
+import UserCard from './UserCard'; 
 import { getUsers, deleteUser } from '../api/ApiServices';
+import { toast } from 'react-toastify';
+import AddUserModal from './AddUserModal';
 
-const UserList: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState<number>(0);
-  const [totalPages, setTotalPages] = useState<number>(0);
-  const [modalOpen, setModalOpen] = useState<boolean>(false);
+interface UserListProps {
+    users: User[];
+    setUsers: (users: User[] | ((prevUsers: User[]) => User[])) => void;
+}
 
-  const loadUsers = useCallback(async (page: number) => {
-    try {
-      setLoading(true);
-      const data = await getUsers(page);
-      setUsers(data.content || []);
-      setTotalPages(data.totalPages || 0);
-    } catch (err) {
-      setError('Error fetching users');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+const UserList = ({ users, setUsers }: UserListProps) => {
+    const [currentPage, setCurrentPage] = useState(0);  
+    const [totalPages, setTotalPages] = useState(0);  
+    const [loading, setLoading] = useState(true);  
+    const [error, setError] = useState<string | null>(null);  
+    const [isEditModalOpen, setEditModalOpen] = useState(false);
+    const [userToEdit, setUserToEdit] = useState<User | null>(null);  
 
-  useEffect(() => {
-    loadUsers(currentPage);
-  }, [currentPage, loadUsers]);
+    const loadUsers = useCallback(async (page: number) => {
+        setLoading(true);  
+        try {
+            const response = await getUsers(page);  
+            setUsers(response.content || []);  
+            setTotalPages(response.totalPages || 0);  
+        } catch (err) {
+            setError('Error loading users');  
+            toast.error('Failed to load users');  
+        } finally {
+            setLoading(false);  
+        }
+    }, [setUsers]);
 
-  const handleDelete = async (userId: string) => {
-    try {
-      await deleteUser(userId);
-      setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      setError('Error deleting user');
-    }
-  };
+    useEffect(() => {
+        loadUsers(currentPage);  
+    }, [loadUsers, currentPage]);
 
-  const handlePageChange = (page: number) => {
-    if (page >= 0 && page < totalPages) {
-      setCurrentPage(page);
-    }
-  };
+    const handleDeleteUser = async (userId: string) => {
+        try {
+            await deleteUser(userId);  
+            setUsers((prev) => prev.filter(user => user.id !== userId)); 
+            toast.success('User deleted successfully');  
+        } catch {
+            toast.error('Error deleting user');  
+        }
+    };
 
-  const handleFetchMoreUsers = () => {
-    if (currentPage < totalPages - 1) {
-      setCurrentPage(prevPage => prevPage + 1);
-    }
-  };
+    const handleEditUser = (user: User) => {
+        setUserToEdit(user); 
+        setEditModalOpen(true); 
+    };
 
-  const handleAddUser = () => {
-    setModalOpen(true);
-  };
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 0 && newPage < totalPages) {
+            setCurrentPage(newPage);  
+        }
+    };
 
-  const closeModal = () => {
-    setModalOpen(false);
-  };
+    const refreshUsers = () => loadUsers(currentPage);
 
-  const refreshUsers = async () => {
-    await loadUsers(currentPage);
-  };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  return (
-    <div>
-      <Navbar 
-        onAddUser={handleAddUser} 
-        onFetchMoreUsers={handleFetchMoreUsers} 
-      />
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-6">User List</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {users.map(user => (
-            <div key={user.id} className="bg-white p-4 rounded-lg shadow-md">
-              <img
-                src={user.photoUrl || 'https://via.placeholder.com/150'}
-                alt={user.name}
-                className="w-full h-32 object-cover rounded-md mb-4"
-              />
-              <h2 className="text-xl font-semibold mb-2">{user.name}</h2>
-              <p className="text-gray-600">Username: {user.username}</p>
-              <p className="text-gray-600">Role: {user.role}</p>
-              <button onClick={() => handleDelete(user.id)} className="text-red-500">Delete</button>
-            </div>
-          ))}
+    return (
+        <div className="bg-gray-800 min-h-screen p-4"> 
+            {loading ? (  
+                <p className="text-white">Loading...</p>
+            ) : error ? (  
+                <p className="text-red-500">{error}</p>
+            ) : users.length > 0 ? (  
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {users.map(user => (
+                            <UserCard
+                                key={user.id}
+                                {...user}
+                                onDelete={() => handleDeleteUser(user.id)}
+                                onEdit={() => handleEditUser(user)}  
+                            />
+                        ))}
+                    </div>
+                    <div className="flex justify-center items-center mt-4">
+                        <button
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            className="bg-blue-500 text-white px-4 py-2 rounded mr-2 hover:bg-blue-600"
+                            disabled={currentPage === 0}  
+                        >
+                            Previous
+                        </button>
+                        <span className="text-white">
+                            Page {currentPage + 1} of {totalPages}
+                        </span>
+                        <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            className="bg-blue-500 text-white px-4 py-2 rounded ml-2 hover:bg-blue-600"
+                            disabled={currentPage === totalPages - 1}  
+                        >
+                            Next
+                        </button>
+                    </div>
+                </>
+            ) : (
+                <p className="text-white">No users available.</p> 
+            )}
+            {isEditModalOpen && userToEdit && (
+                <AddUserModal
+                    closeModal={() => setEditModalOpen(false)}
+                    refreshUsers={refreshUsers}
+                    user={userToEdit} 
+                />
+            )}
         </div>
-        <div className="mt-4 flex justify-between">
-          <button 
-            onClick={() => handlePageChange(currentPage - 1)} 
-            disabled={currentPage === 0}
-            className="bg-blue-500 text-white px-4 py-2 rounded"
-          >
-            Previous
-          </button>
-          <span>Page {currentPage + 1} of {totalPages}</span>
-          <button 
-            onClick={() => handlePageChange(currentPage + 1)} 
-            disabled={currentPage >= totalPages - 1}
-            className="bg-blue-500 text-white px-4 py-2 rounded"
-          >
-            Next
-          </button>
-        </div>
-      </div>
-      {modalOpen && <AddUserModal closeModal={closeModal} refreshUsers={refreshUsers} />}
-    </div>
-  );
+    );
 };
 
 export default UserList;

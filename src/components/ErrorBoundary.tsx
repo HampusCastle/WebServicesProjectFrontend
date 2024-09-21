@@ -1,26 +1,20 @@
 import React, { Component } from 'react';
+import { toastError } from '../api/Toastify';
 
 class ErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean }> {
-  constructor(props: any) {
-    super(props);
-    this.state = { hasError: false };
-  }
+    state = { hasError: false };
 
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Error caught by Error Boundary:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return <h1>Something went wrong.</h1>;
+    static getDerivedStateFromError() {
+        return { hasError: true };
     }
 
-    return this.props.children;
-  }
+    componentDidCatch() {
+        toastError('An unexpected error occurred.');
+    }
+
+    render() {
+        return this.state.hasError ? <h1>Something went wrong.</h1> : this.props.children;
+    }
 }
 
 export default ErrorBoundary;

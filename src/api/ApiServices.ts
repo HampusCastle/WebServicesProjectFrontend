@@ -1,102 +1,48 @@
 import axios from 'axios';
-import { NewUser } from '../types/User';
+import { NewUser, User } from '../types/User';
 
-const API_URL = 'https://localhost:8443/home'; 
+const API_URL = 'https://localhost:8443';
 
 const axiosInstance = axios.create({
     baseURL: API_URL,
-    withCredentials: true, 
+    withCredentials: true,
 });
 
 const handleError = (error: any) => {
-    if (error.response) {
-        console.error('API Error:', {
-            status: error.response.status,
-            data: error.response.data,
-            headers: error.response.headers,
-        });
-    } else {
-        console.error('API Error:', error.message);
-    }
-    throw error;
+    const errorMessage = axios.isAxiosError(error) && error.response 
+        ? `API Error: ${error.response.status} - ${error.response.data}`
+        : `API Error: ${error.message}`;
+
+    console.error(errorMessage);
+    throw new Error(errorMessage);
 };
 
-export const login = async (username: string, password: string) => {
+const requestHandler = async (method: 'GET' | 'POST' | 'PUT' | 'DELETE', url: string, data?: any) => {
     try {
-        const response = await axios.post('https://localhost:8443/login', new URLSearchParams({
-            username,
-            password
-        }), {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            withCredentials: true 
-        });
-        return response.data; 
-    } catch (error) {
-        console.error('Login error:', error);
-        throw error; 
-    }
-};
-
-export const saveUser = async (user: NewUser) => {
-    try {
-        return await axiosInstance.post('/home/saveUser', user); 
-    } catch (error) {
-        handleError(error);
-    }
-};
-
-export const getUsers = async (page = 0, size = 12) => {
-    try {
-        const response = await axiosInstance.get(`/users?page=${page}&size=${size}`);
+        const response = await axiosInstance.request({ method, url, data });
         return response.data;
     } catch (error) {
         handleError(error);
+        return null;
     }
 };
 
-export const getUser = async (id: string) => {
+export const login = async (username: string, password: string) => {
+    return requestHandler('POST', '/login', new URLSearchParams({ username, password }));
+};
+
+export const logout = async () => {
     try {
-        return await axiosInstance.get(`/home/users/${id}`);
-    } catch (error) {
-        handleError(error);
+        await requestHandler('POST', '/logout');
+    } catch {
+        throw new Error('Logout failed. Please try again.');
     }
 };
 
-export const updateUser = async (user: { id: string; }) => {
-    try {
-        return await axiosInstance.put(`/users/${user.id}`, user);
-    } catch (error) {
-        handleError(error);
-    }
-};
-
-export const updatePhoto = async (id: string, file: Blob) => {
-    try {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('id', id);
-        return await axiosInstance.post(`/users/photo`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
-    } catch (error) {
-        handleError(error);
-    }
-};
-
-export const deleteUser = async (id: string) => {
-    try {
-        return await axiosInstance.delete(`/users/${id}`);
-    } catch (error) {
-        handleError(error);
-    }
-};
-
-export const fetchContacts = async () => {
-    try {
-        return await axiosInstance.post(`/users/fetch`);
-    } catch (error) {
-        handleError(error);
-    }
-};
+export const saveUser = (user: NewUser) => requestHandler('POST', '/home/saveUser', user);
+export const getUsers = (page = 0, size = 12) => requestHandler('GET', `/home/users?page=${page}&size=${size}`);
+export const getUser = (id: string) => requestHandler('GET', `/home/users/${id}`);
+export const updateUser = (user: User) => requestHandler('PUT', `/home/users/${user.id}`, user);
+export const deleteUser = (id: string) => requestHandler('DELETE', `/home/users/${id}`);
+export const fetchUsers = () => requestHandler('POST', '/home/fetch');
+export const checkAuth = () => requestHandler('GET', '/auth/check').then(response => response.status === 200);
