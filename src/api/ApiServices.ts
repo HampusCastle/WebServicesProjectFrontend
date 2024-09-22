@@ -13,7 +13,7 @@ const handleError = (error: any) => {
         ? `API Error: ${error.response.status} - ${error.response.data}`
         : `API Error: ${error.message}`;
 
-    console.error(errorMessage);
+    console.error('Logout Error:', errorMessage);
     throw new Error(errorMessage);
 };
 

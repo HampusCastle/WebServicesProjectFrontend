@@ -7,35 +7,41 @@ interface UserFetcherProps {
 }
 
 const UserFetcher = ({ setUsers }: UserFetcherProps) => {
+    const logError = (message: string, error: unknown) => {
+        console.error(message, error);
+    };
+
     const handleFetchMoreUsers = async () => {
         try {
-            const response = await fetchUsers();
-            if (response && Array.isArray(response.data)) {
-                const savedUsers = await Promise.all(
-                    response.data.map(async (user: NewUser) => {
-                        try {
-                            return await saveUser(user);
-                        } catch {
-                            return null;
-                        }
-                    })
-                );
+            const { data } = await fetchUsers();
 
-                const validUsers = savedUsers.filter((user): user is User => user !== null);
-                setUsers((prevUsers) => [...prevUsers, ...validUsers]);
-                console.log('Users fetched and saved:', validUsers);
-            } else {
-                console.error('No valid array data received');
+            if (!Array.isArray(data)) {
+                logError('Received invalid data format; expected an array', new Error('Invalid format'));
+                return;
             }
+
+            const savedUsers = await Promise.all(
+                data.map(async (user: NewUser) => {
+                    try {
+                        return await saveUser(user);
+                    } catch (error) {
+                        logError(`Error saving user: ${user.username}`, error);
+                        return null;
+                    }
+                })
+            );
+
+            const validUsers = savedUsers.filter((user): user is User => user !== null);
+            setUsers((prevUsers) => [...prevUsers, ...validUsers]);
         } catch (error) {
-            console.error('Error fetching users:', error);
+            logError('Error fetching users:', error);
         }
     };
 
     return (
         <button 
             onClick={handleFetchMoreUsers} 
-            className="bg-white text-blue-600 px-4 py-2 rounded-lg"
+            className="bg-white text-green-600 px-4 py-2 rounded-lg hover:bg-green-200 transition"
         >
             Fetch More Users
         </button>

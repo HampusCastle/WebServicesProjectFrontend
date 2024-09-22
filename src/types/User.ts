@@ -5,7 +5,7 @@ export interface User {
   phone: string;
   address: string;
   username: string;
-  password: string;
+  password?: string;
   photoUrl?: string;
   role: string;
 }
@@ -16,7 +16,7 @@ export interface NewUser {
   phone: string;
   address: string;
   username: string;
-  password: string;
+  password?: string;
   photoUrl?: string;
   role?: string;
 }

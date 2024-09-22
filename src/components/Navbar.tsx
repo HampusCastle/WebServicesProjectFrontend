@@ -1,34 +1,41 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface NavbarProps {
     onAddUser: () => void;
-    onFetchMoreUsers: () => void;  
-    setIsModalOpen: (open: boolean) => void; 
+    onFetchMoreUsers: () => Promise<void>;
+    onOpenLogout: () => void; 
 }
 
-const Navbar = ({ onAddUser, onFetchMoreUsers, setIsModalOpen }: NavbarProps) => {
+const Navbar = ({ onAddUser, onFetchMoreUsers, onOpenLogout }: NavbarProps) => {
+    const navigate = useNavigate();
+    const buttonClass = "bg-accent text-white px-4 py-2 rounded-md hover:bg-blue-700 transition";
+
     return (
-        <nav className="bg-gray-900 p-4 flex justify-between items-center">
-            <Link to="/home" className="text-white text-lg hover:bg-gray-700 px-3 py-2 rounded">
+        <nav className="flex justify-between items-center p-4 bg-primary text-white">
+            <button 
+                onClick={() => navigate('/home')} 
+                className={buttonClass + " mr-4"}
+            >
                 Home
-            </Link>
+            </button>
+            <h1 className="text-white font-bold text-3xl">Your Contact Book Online</h1>
             <div>
                 <button 
                     onClick={onAddUser} 
-                    className="bg-blue-500 text-white px-4 py-2 rounded mr-2 hover:bg-blue-600"
+                    className={buttonClass + " mr-4"}
                 >
                     Add User
                 </button>
                 <button 
                     onClick={onFetchMoreUsers} 
-                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                    className={buttonClass}
                 >
                     Fetch More Users
                 </button>
                 <button 
-                    onClick={() => setIsModalOpen(true)} 
-                    className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded transition duration-300"
+                    onClick={onOpenLogout} 
+                    className={buttonClass + " ml-4"}
                 >
                     Logout
                 </button>
