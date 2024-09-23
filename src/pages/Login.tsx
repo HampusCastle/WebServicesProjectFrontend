@@ -42,7 +42,7 @@ const Login = ({ setIsAuthenticated }: LoginProps) => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setCredentials((prev) => ({ ...prev, [name]: value }));
+        setCredentials(prev => ({ ...prev, [name]: value }));
     };
 
     const handleLogin = async (e: React.FormEvent) => {

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import UserList from './components/UserList';
 import Login from './pages/Login';
 import Home from './pages/Home';
@@ -9,6 +9,7 @@ import AddUserModal from './components/modals/AddUserModal';
 import { User } from './types/User';
 import { fetchUsers, checkAuth } from './api/ApiServices';
 import Logout from './pages/Logout';
+import {toast} from 'react-toastify'
 
 const App = () => {
     const [users, setUsers] = useState<User[]>([]);
@@ -36,7 +37,7 @@ const App = () => {
         try {
             const response = await fetchUsers();
             if (response) {
-                setUsers((prevUsers) => [...prevUsers, ...response]);
+                setUsers(prevUsers => [...prevUsers, ...response]);
                 toast.success('Successfully added more users');
             } else {
                 toast.info('No more users to fetch');
@@ -70,7 +71,7 @@ const App = () => {
             {isAddUserModalOpen && (
                 <AddUserModal 
                     onClose={closeAddUserModal} 
-                    refreshUsers={() => setUsers((prev) => [...prev])} 
+                    refreshUsers={() => setUsers(prev => [...prev])} 
                 />
             )}
             {isLogoutModalOpen && (

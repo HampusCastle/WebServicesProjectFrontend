@@ -8,8 +8,6 @@ interface LogoutProps {
 }
 
 const Logout = ({ setIsModalOpen, setIsAuthenticated }: LogoutProps) => {
-    
-
     const handleLogout = async () => {
         try {
             await logout();

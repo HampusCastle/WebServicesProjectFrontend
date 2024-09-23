@@ -17,16 +17,13 @@ const Home: React.FC = () => {
         <div className={containerClass}>
             <h1 className={headingClass}>Welcome to User Management</h1>
             <p className={paragraphClass}>Manage your users efficiently. Click below to view the list of users.</p>
-            <button 
-                onClick={handleViewUsers}
-                className={buttonClass}
-            >
+            <button onClick={handleViewUsers} className={buttonClass}>
                 <strong>View Users</strong>
             </button>
             <div className="mt-10">
-                <img 
-                    src="https://cdn-icons-png.flaticon.com/512/93/93635.png" 
-                    alt="Phonebook Illustration" 
+                <img
+                    src="https://cdn-icons-png.flaticon.com/512/93/93635.png"
+                    alt="Phonebook Illustration"
                     className="rounded-lg shadow-lg w-64 border-4 border-primary"
                 />
             </div>

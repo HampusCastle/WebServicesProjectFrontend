@@ -16,7 +16,7 @@ const UserList = ({ users, setUsers }: UserListProps) => {
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [, setError] = useState<string | null>(null);
     const [modals, setModals] = useState({
         isAddModalOpen: false,
         isEditModalOpen: false,
@@ -46,11 +46,10 @@ const UserList = ({ users, setUsers }: UserListProps) => {
     }, [loadUsers, currentPage]);
 
     const handleDeleteUser = async (userId: string) => {
-        const confirm = window.confirm('Are you sure you want to delete this user?');
-        if (!confirm) return;
+        if (!window.confirm('Are you sure you want to delete this user?')) return;
 
         try {
-            await deleteUserById(userId, true); // Pass true for confirmation
+            await deleteUserById(userId, true);
             setUsers((prev) => prev.filter(user => user.id !== userId));
             toast.success('User deleted successfully');
         } catch {
@@ -95,12 +94,8 @@ const UserList = ({ users, setUsers }: UserListProps) => {
         return <p className="text-white">Loading...</p>;
     }
 
-    if (!Array.isArray(users)) {
+    if (!Array.isArray(users) || users.length === 0) {
         return <p className="text-white">No users found.</p>;
-    }
-
-    if (users.length === 0) {
-        return <p className="text-white">No users available.</p>;
     }
 
     return (

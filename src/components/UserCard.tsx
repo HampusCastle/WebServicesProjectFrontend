@@ -46,8 +46,8 @@ const UserCard = ({
             <p className="text-sm">{address}</p>
             <div className="mt-4">
                 <button onClick={onViewDetails} className={buttonStyles}>View Details</button>
-                <button onClick={onEdit} className={buttonStyles + " ml-2"}>Edit</button>
-                <button onClick={onDelete} className={buttonStyles + " ml-2"}>Delete</button>
+                <button onClick={onEdit} className={`${buttonStyles} ml-2`}>Edit</button>
+                <button onClick={onDelete} className={`${buttonStyles} ml-2`}>Delete</button>
             </div>
         </div>
     );

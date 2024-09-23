@@ -13,30 +13,18 @@ const Navbar = ({ onAddUser, onFetchMoreUsers, onOpenLogout }: NavbarProps) => {
 
     return (
         <nav className="flex justify-between items-center p-4 bg-primary text-white">
-            <button 
-                onClick={() => navigate('/home')} 
-                className={buttonClass + " mr-4"}
-            >
+            <button onClick={() => navigate('/home')} className={`${buttonClass} mr-4`}>
                 Home
             </button>
             <h1 className="text-white font-bold text-3xl">Your Contact Book Online</h1>
             <div>
-                <button 
-                    onClick={onAddUser} 
-                    className={buttonClass + " mr-4"}
-                >
+                <button onClick={onAddUser} className={`${buttonClass} mr-4`}>
                     Add User
                 </button>
-                <button 
-                    onClick={onFetchMoreUsers} 
-                    className={buttonClass}
-                >
+                <button onClick={onFetchMoreUsers} className={buttonClass}>
                     Fetch More Users
                 </button>
-                <button 
-                    onClick={onOpenLogout} 
-                    className={buttonClass + " ml-4"}
-                >
+                <button onClick={onOpenLogout} className={`${buttonClass} ml-4`}>
                     Logout
                 </button>
             </div>

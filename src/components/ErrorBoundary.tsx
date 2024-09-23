@@ -5,10 +5,14 @@ interface ErrorBoundaryProps {
     children: React.ReactNode;
 }
 
-class ErrorBoundary extends Component<ErrorBoundaryProps, { hasError: boolean }> {
-    state = { hasError: false };
+interface ErrorBoundaryState {
+    hasError: boolean;
+}
 
-    static getDerivedStateFromError(): { hasError: boolean } {
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+    state: ErrorBoundaryState = { hasError: false };
+
+    static getDerivedStateFromError(): ErrorBoundaryState {
         return { hasError: true };
     }
 
@@ -21,11 +25,11 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, { hasError: boolean }>
         const { hasError } = this.state;
         const { children } = this.props;
 
-        if (hasError) {
-            return <h1 className="text-red-500">Something went wrong.</h1>;
-        }
-
-        return children;
+        return hasError ? (
+            <h1 className="text-red-500">Something went wrong.</h1>
+        ) : (
+            children
+        );
     }
 }
 

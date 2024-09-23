@@ -24,15 +24,7 @@ const EditUserModal = ({ user, onSave, onCancel }: EditUserModalProps) => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSave({
-            id: user.id,
-            name,
-            email,
-            phone,
-            address,
-            username,
-            photoUrl, 
-        });
+        onSave({ id: user.id, name, email, phone, address, username, photoUrl });
     };
 
     return (
