@@ -14,16 +14,15 @@ const App = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [isAddUserModalOpen, setAddUserModalOpen] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false); 
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
     useEffect(() => {
         const initializeApp = async () => {
             try {
-                const [isAuth, fetchedUsers] = await Promise.all([checkAuth(), fetchUsers()]);
+                const isAuth = await checkAuth();
                 setIsAuthenticated(isAuth);
-                setUsers(fetchedUsers || []); 
             } catch (error) {
-                toast.error('Failed to fetch users or verify authentication');
+                toast.error('Failed to verify authentication');
             }
         };
 
@@ -32,6 +31,7 @@ const App = () => {
 
     const handleAddUser = () => setAddUserModalOpen(true);
     const closeAddUserModal = () => setAddUserModalOpen(false);
+
     const handleFetchMoreUsers = async () => {
         try {
             const response = await fetchUsers();

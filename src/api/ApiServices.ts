@@ -13,7 +13,7 @@ const handleError = (error: any) => {
         ? `API Error: ${error.response.status} - ${error.response.data}`
         : `API Error: ${error.message}`;
 
-    console.error('Logout Error:', errorMessage);
+    console.error('API Error:', error); 
     throw new Error(errorMessage);
 };
 
@@ -41,8 +41,12 @@ export const logout = async () => {
 
 export const saveUser = (user: NewUser) => requestHandler('POST', '/home/saveUser', user);
 export const getUsers = (page = 0, size = 12) => requestHandler('GET', `/home/users?page=${page}&size=${size}`);
-export const getUser = (id: string) => requestHandler('GET', `/home/users/${id}`);
+export const getUserById = (userId: string, status?: string) => {
+    return requestHandler('GET', `/home/users/${userId}${status ? `?status=${status}` : ''}`);
+};
 export const updateUser = (user: User) => requestHandler('PUT', `/home/users/${user.id}`, user);
-export const deleteUser = (id: string) => requestHandler('DELETE', `/home/users/${id}`);
+export const deleteUserById = (userId: string, confirm: boolean) => {
+    return requestHandler('DELETE', `/home/users/${userId}?confirm=${confirm}`);
+};
 export const fetchUsers = () => requestHandler('POST', '/home/fetch');
 export const checkAuth = () => requestHandler('GET', '/auth/check').then(response => response.status === 200);

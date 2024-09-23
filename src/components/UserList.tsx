@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { User } from '../types/User'; 
 import UserCard from './UserCard'; 
-import { getUsers, deleteUser } from '../api/ApiServices';
+import { getUsers, deleteUserById, updateUser, getUserById } from '../api/ApiServices';
 import { toast } from 'react-toastify';
 import AddUserModal from './modals/AddUserModal';
 import EditUserModal from './modals/EditUserModal';
@@ -28,12 +28,14 @@ const UserList = ({ users, setUsers }: UserListProps) => {
     const loadUsers = useCallback(async (page: number) => {
         setLoading(true);
         setError(null); 
+    
         try {
             const response = await getUsers(page);
             setUsers(response.content || []);
             setTotalPages(response.totalPages || 0);
         } catch (err) {
-            handleError('Error loading users');
+            console.error(err);
+            setError('Error loading users');
         } finally {
             setLoading(false);
         }
@@ -43,35 +45,44 @@ const UserList = ({ users, setUsers }: UserListProps) => {
         loadUsers(currentPage);
     }, [loadUsers, currentPage]);
 
-    const handleError = (message: string) => {
-        setError(message);
-        toast.error(message);
-    };
-
     const handleDeleteUser = async (userId: string) => {
+        const confirm = window.confirm('Are you sure you want to delete this user?');
+        if (!confirm) return;
+
         try {
-            await deleteUser(userId);
+            await deleteUserById(userId, true); // Pass true for confirmation
             setUsers((prev) => prev.filter(user => user.id !== userId));
             toast.success('User deleted successfully');
         } catch {
-            handleError('Error deleting user');
+            toast.error('Error deleting user');
         }
     };
 
-    const handleEditUser = (user: User) => {
-        setModals({
-            ...modals,
-            userToEdit: user,
-            isEditModalOpen: true,
-        });
+    const handleEditUser = async (updatedUser: User) => {
+        try {
+            const response = await updateUser(updatedUser);
+            setUsers((prevUsers) =>
+                prevUsers.map((user) => (user.id === response.id ? response : user))
+            );
+            toast.success('User updated successfully');
+        } catch (error) {
+            toast.error('Error updating user');
+        } finally {
+            setModals((prev) => ({ ...prev, isEditModalOpen: false }));
+        }
     };
 
-    const handleViewUser = (user: User) => {
-        setModals({
-            ...modals,
-            userToView: user,
-            isDetailModalOpen: true,
-        });
+    const handleViewUser = async (user: User) => {
+        try {
+            const userDetails = await getUserById(user.id);
+            setModals({
+                ...modals,
+                userToView: userDetails,
+                isDetailModalOpen: true,
+            });
+        } catch (error) {
+            toast.error('Error fetching user details');
+        }
     };
 
     const handlePageChange = (newPage: number) => {
@@ -80,18 +91,16 @@ const UserList = ({ users, setUsers }: UserListProps) => {
         }
     };
 
-    const refreshUsers = () => loadUsers(currentPage);
-    
     if (loading) {
         return <p className="text-white">Loading...</p>;
     }
 
-    if (error) {
-        return <p className="text-red-500">{error}</p>;
+    if (!Array.isArray(users)) {
+        return <p className="text-white">No users found.</p>;
     }
 
-    if (!users || users.length === 0) {
-        return <p className="text-white">No users found.</p>;
+    if (users.length === 0) {
+        return <p className="text-white">No users available.</p>;
     }
 
     return (
@@ -102,7 +111,7 @@ const UserList = ({ users, setUsers }: UserListProps) => {
                         key={user.id}
                         {...user}
                         onDelete={() => handleDeleteUser(user.id)}
-                        onEdit={() => handleEditUser(user)} 
+                        onEdit={() => setModals({ ...modals, userToEdit: user, isEditModalOpen: true })}
                         onViewDetails={() => handleViewUser(user)}
                     />
                 ))}
@@ -131,18 +140,13 @@ const UserList = ({ users, setUsers }: UserListProps) => {
             {modals.isAddModalOpen && (
                 <AddUserModal
                     onClose={() => setModals((prev) => ({ ...prev, isAddModalOpen: false }))}
-                    refreshUsers={refreshUsers}
+                    refreshUsers={() => loadUsers(currentPage)}
                 />
             )}
             {modals.isEditModalOpen && modals.userToEdit && (
                 <EditUserModal
                     user={modals.userToEdit}
-                    onSave={(updatedUser) => {
-                        setUsers((prevUsers) => 
-                            prevUsers.map((u) => (u.id === updatedUser.id ? updatedUser : u))
-                        );
-                        setModals((prev) => ({ ...prev, isEditModalOpen: false }));
-                    }}
+                    onSave={handleEditUser}
                     onCancel={() => setModals((prev) => ({ ...prev, isEditModalOpen: false }))}
                 />
             )}
@@ -152,9 +156,13 @@ const UserList = ({ users, setUsers }: UserListProps) => {
                     onClose={() => setModals((prev) => ({ ...prev, isDetailModalOpen: false }))}
                     onEdit={() => {
                         if (modals.userToView) {
-                            handleEditUser(modals.userToView);
+                            setModals({
+                                ...modals,
+                                userToEdit: modals.userToView,
+                                isEditModalOpen: true,
+                                isDetailModalOpen: false,
+                            });
                         }
-                        setModals((prev) => ({ ...prev, isDetailModalOpen: false }));
                     }}
                 />
             )}

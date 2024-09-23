@@ -8,7 +8,7 @@ interface EditUserModalProps {
         phone: string;
         address: string;
         username: string;
-        photoUrl?: string; // Ensure photoUrl is included
+        photoUrl?: string;
     };
     onSave: (updatedUser: any) => void;
     onCancel: () => void;
